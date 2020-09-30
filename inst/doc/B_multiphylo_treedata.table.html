@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Josef Uyeda, Cristian Roman-Palacios, April Wright" />
+
+<meta name="date" content="2020-08-08" />
+
+<title>Working With multiPhylo Objects in treedata.table</title>
+
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Working With multiPhylo Objects in treedata.table</h1>
+<h4 class="author">Josef Uyeda, Cristian Roman-Palacios, April Wright</h4>
+<h4 class="date">08/08/2020</h4>
+
+
+
+<div id="working-with-multiphylo-objects" class="section level2">
+<h2>Working with multiphylo objects</h2>
+<p><code>treedata.table</code> further allows the matching of multiple phylogenies (<code>multiPhylo</code>) against a single dataset (<code>data.frame</code>). Below, we modified the anole dataset to explain the extended functionality of <code>treedata.table</code> with <code>multiPhylo</code> objects.</p>
+<p>We first load the sample dataset.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">library</span>(ape)</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">library</span>(treedata.table)</span>
+<span id="cb1-3"><a href="#cb1-3"></a></span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="co"># Load example data</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="kw">data</span>(anolis)</span>
+<span id="cb1-6"><a href="#cb1-6"></a><span class="co">#Create treedata.table object with as.treedata.table</span></span>
+<span id="cb1-7"><a href="#cb1-7"></a>td &lt;-<span class="st"> </span><span class="kw">as.treedata.table</span>(<span class="dt">tree =</span> anolis<span class="op">$</span>phy, <span class="dt">data =</span> anolis<span class="op">$</span>dat)</span></code></pre></div>
+<pre><code>## Tip labels detected in column: X</code></pre>
+<pre><code>## Phylo object detected</code></pre>
+<pre><code>## No tips were dropped from the original tree/dataset</code></pre>
+<p>We then create a <code>multiPhylo</code> object including only two <code>phylo</code> objects. Users can provide any number of <code>phylo</code> objects within the <code>multiPhylo</code> object. However, trees should only differ in their topology. In other words, all trees must have the same tip labels. Nevertheless, both the provided <code>multiPhylo</code> and <code>data.frame</code> should partially overlap.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>trees&lt;-<span class="kw">list</span>(anolis<span class="op">$</span>phy,anolis<span class="op">$</span>phy)</span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="kw">class</span>(trees) &lt;-<span class="st"> &quot;multiPhylo&quot;</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a>trees</span></code></pre></div>
+<pre><code>## 2 phylogenetic trees</code></pre>
+<p>Now, we create our treedata.table object by combining the trait data (<code>data.frame</code>) and the newly generated <code>multiPhylo</code> object.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>td &lt;-<span class="st"> </span><span class="kw">as.treedata.table</span>(<span class="dt">tree=</span>trees, <span class="dt">data=</span>anolis<span class="op">$</span>dat)</span></code></pre></div>
+<pre><code>## Tip labels detected in column: X</code></pre>
+<pre><code>## Multiphylo object detected</code></pre>
+<pre><code>## No tips were dropped from the original trees/dataset</code></pre>
+<p>The resulting <code>td</code> object now returns a <code>multiPhylo</code> object under <code>phy</code></p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">class</span>(td<span class="op">$</span>phy);td<span class="op">$</span>phy</span></code></pre></div>
+<pre><code>## [1] &quot;multiPhylo&quot;</code></pre>
+<pre><code>## 2 phylogenetic trees</code></pre>
+<p>Please note that all the basic <code>treedata.table</code> functions highlighted above for <code>phylo</code> objects are still functional when <code>treedata.table</code> objects include <code>multiPhylo</code> objects.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>td[, <span class="kw">head</span>(.SD, <span class="dv">1</span>), by =<span class="st"> &quot;ecomorph&quot;</span>]</span></code></pre></div>
+<pre><code>## $phy 
+## 2 phylogenetic trees
+## 
+## $dat 
+##    ecomorph   tip.label      SVL  PCI_limbs  PCII_head PCIII_padwidth_vs_tail
+## 1:       TG        ahli 4.039125 -3.2482860  0.3722519             -1.0422187
+## 2:       GB  ophiolepis 3.637962  0.7915117  1.4585760             -1.3152005
+## 3:       CG     garmani 4.769473 -0.7735264  0.9371249              0.2594994
+## 4:       TC    opalinus 3.838376 -1.7794371 -0.3245381              1.5569939
+## 5:       TW valencienni 4.321524  2.9424139 -0.8846007              1.8543308
+## 6:        U  reconditus 4.482607 -2.7270416 -0.2104066             -2.3534242
+##    PCIV_lamella_num awesomeness   hostility    attitude      island
+## 1:       -2.4147423 -0.24165170 -0.17347691  0.64437708        Cuba
+## 2:       -2.2377514  0.35441877  0.05366142 -0.09389530        Cuba
+## 3:        0.1051149  0.16779131  0.67675600 -0.69460080 Puerto Rico
+## 4:        0.9366501  1.48302162 -0.90826653  0.72613483     Jamaica
+## 5:        0.1288233 -0.08837008  0.46528679 -0.56754896     Jamaica
+## 6:       -0.7992905  0.26096544 -0.27169792  0.01367143     Jamaica</code></pre>
+<p>Functions can also be run on any <code>treedata.table</code> object with <code>multiphylo</code> data. For instance, the following line will fit a phenogram for <code>SVL</code> on each of the trees we provided in the <code>multiPhylo</code> object.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a><span class="kw">tdt</span>(td, geiger<span class="op">::</span><span class="kw">fitContinuous</span>(phy, <span class="kw">extractVector</span>(td, <span class="st">&#39;SVL&#39;</span>), <span class="dt">model=</span><span class="st">&quot;BM&quot;</span>, <span class="dt">ncores=</span><span class="dv">1</span>))</span></code></pre></div>
+<pre><code>## Multiphylo object detected. Expect a list of function outputs</code></pre>
+<pre><code>## [[1]]
+## GEIGER-fitted comparative model of continuous data
+##  fitted &#39;BM&#39; model parameters:
+##  sigsq = 0.136160
+##  z0 = 4.065918
+## 
+##  model summary:
+##  log-likelihood = -4.700404
+##  AIC = 13.400807
+##  AICc = 13.524519
+##  free parameters = 2
+## 
+## Convergence diagnostics:
+##  optimization iterations = 100
+##  failed iterations = 0
+##  number of iterations with same best fit = 100
+##  frequency of best fit = 1.00
+## 
+##  object summary:
+##  &#39;lik&#39; -- likelihood function
+##  &#39;bnd&#39; -- bounds for likelihood search
+##  &#39;res&#39; -- optimization iteration summary
+##  &#39;opt&#39; -- maximum likelihood parameter estimates
+## 
+## [[2]]
+## GEIGER-fitted comparative model of continuous data
+##  fitted &#39;BM&#39; model parameters:
+##  sigsq = 0.136160
+##  z0 = 4.065918
+## 
+##  model summary:
+##  log-likelihood = -4.700404
+##  AIC = 13.400807
+##  AICc = 13.524519
+##  free parameters = 2
+## 
+## Convergence diagnostics:
+##  optimization iterations = 100
+##  failed iterations = 0
+##  number of iterations with same best fit = 100
+##  frequency of best fit = 1.00
+## 
+##  object summary:
+##  &#39;lik&#39; -- likelihood function
+##  &#39;bnd&#39; -- bounds for likelihood search
+##  &#39;res&#39; -- optimization iteration summary
+##  &#39;opt&#39; -- maximum likelihood parameter estimates</code></pre>
+<p>The output is an object of class <code>list</code> with each element corresponding to the output function of each tree in the provided <code>multiPhylo</code> object.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
